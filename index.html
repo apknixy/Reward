@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Win Big with DailyHub! Play Our Lucky Gift Box Game & Get Free Rewards</title>
+    <meta name="description" content="Test your luck with DailyHub's Lucky Gift Box game! Click to reveal exciting prizes like cash, exclusive access, and more. Share with friends to boost your chances. Daily rewards await!">
+    
+    <meta name="keywords" content="DailyHub Game, Lucky Gift Box, Win Rewards, Free Prizes, Play and Earn, Online Contest, Share to Win, DailyHub Gifts, Spin and Win, Get Cash">
+    <meta name="author" content="DailyHub">
+    <link rel="canonical" href="https://apknixy.github.io/reward/"> 
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --game-bg-start: #8BC6EC; /* Light Blue */
+            --game-bg-end: #9599E2;   /* Lavender */
+            --game-primary: #FF5733; /* Orange-Red for accent */
+            --game-secondary: #33C7FF; /* Bright Blue for buttons */
+            --game-text-dark: #333;
+            --game-text-light: #fefefe;
+            --box-color: #ffd700; /* Gold for gift boxes */
+            --box-shadow: rgba(0, 0, 0, 0.2);
+            --modal-bg: rgba(0, 0, 0, 0.7);
+            --progress-bar-bg: #e0e0e0;
+            --progress-bar-fill: #4CAF50; /* Green for progress */
+            --disclaimer-initial-color: rgba(0, 0, 0, 0.05); /* Very faint */
+            --disclaimer-revealed-color: rgba(0, 0, 0, 0.2); /* Slightly less faint */
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom right, var(--game-bg-start), var(--game-bg-end));
+            color: var(--game-text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative; /* For absolute positioned ads/disclaimer */
+        }
+        .game-container {
+            background-color: var(--game-text-light);
+            padding: 40px 30px;
+            border-radius: 25px;
+            box-shadow: 0 15px 45px var(--box-shadow);
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+            overflow: hidden;
+            border: 5px solid var(--game-primary);
+            position: relative;
+            z-index: 2; /* Above ads if they try to overlap */
+        }
+        .game-header {
+            background: linear-gradient(to right, var(--game-primary), #FF7B54);
+            color: var(--game-text-light);
+            padding: 30px 20px;
+            margin: -40px -30px 40px -30px;
+            border-bottom: 4px solid var(--game-secondary);
+            border-radius: 20px 20px 0 0;
+            font-family: 'Fredoka One', cursive;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+        .game-header h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            color: var(--game-text-light);
+        }
+        .game-header p {
+            font-size: 1.5em;
+            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        h2 {
+            color: var(--game-primary);
+            font-size: 2.5em;
+            margin-top: 30px;
+            margin-bottom: 25px;
+        }
+        p {
+            font-size: 1.1em;
+            margin-bottom: 20px;
+            color: var(--game-text-dark);
+        }
+
+        .gift-boxes {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap; /* Allows boxes to wrap on smaller screens */
+            gap: 25px;
+            margin-top: 40px;
+            margin-bottom: 50px;
+        }
+        .gift-box {
+            width: 180px; /* Standard size */
+            height: 180px;
+            background-color: var(--box-color);
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 10px 20px var(--box-shadow);
+            transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid var(--game-primary);
+        }
+        .gift-box:hover:not(.opened):not(.disabled) {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            background-color: #ffe066; /* Lighter gold on hover */
+        }
+        .gift-box.opened {
+            cursor: default;
+            background-color: var(--game-bg-start); /* Changed color when opened */
+            opacity: 0.7;
+            transform: scale(0.95);
+            pointer-events: none; /* Disable further clicks */
+        }
+        .gift-box.disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .gift-box .icon {
+            font-size: 5em; /* Large icon */
+            color: var(--game-text-light);
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+        .gift-box p {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.5em;
+            color: var(--game-text-light);
+            margin: 0;
+            line-height: 1;
+        }
+
+        /* Result Modal */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 100; /* High z-index to be on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: var(--modal-bg);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .modal-content {
+            background: linear-gradient(to bottom, #f0f8ff, #e6e6fa); /* Light serene background */
+            margin: auto;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: popIn 0.4s ease-out forwards;
+            border: 5px solid var(--game-secondary); /* Blue border for modal */
+            position: relative;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 38px;
+            font-weight: bold;
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #333;
+            text-decoration: none;
+        }
+        .modal-content h3 {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3em;
+            color: var(--game-primary);
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        .modal-content p {
+            font-size: 1.4em;
+            color: var(--game-text-dark);
+            margin-bottom: 30px;
+        }
+        .modal-content .prize-won {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--box-color); /* Gold */
+            margin-top: 15px;
+            margin-bottom: 30px;
+            background-color: #fffacd; /* Light lemon chiffon */
+            padding: 15px 25px;
+            border-radius: 10px;
+            border: 2px dashed var(--box-color);
+            display: inline-block;
+        }
+        .modal-content .share-prompt {
+            font-size: 1.3em;
+            margin-top: 30px;
+            margin-bottom: 25px;
+            color: var(--game-text-dark);
+        }
+        .modal-share-buttons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .modal-share-buttons button {
+            padding: 15px 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--game-text-light);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .modal-share-buttons .whatsapp-btn {
+            background-color: #28a745; /* WhatsApp Green */
+        }
+        .modal-share-buttons .whatsapp-btn:hover {
+            background-color: #218838;
+            transform: translateY(-3px);
+        }
+        .modal-share-buttons .other-btn {
+            background-color: #007bff; /* Bootstrap Blue */
+        }
+        .modal-share-buttons .other-btn:hover {
+            background-color: #0056b3;
+            transform: translateY(-3px);
+        }
+        .modal-share-buttons button i {
+            font-size: 1.2em;
+        }
+
+        /* Share Progress Bar */
+        .share-progress-container {
+            width: 90%;
+            margin: 40px auto 20px auto;
+            background-color: var(--progress-bar-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #c0c0c0;
+        }
+        .progress-bar {
+            height: 35px;
+            width: 0%;
+            background-color: var(--progress-bar-fill);
+            border-radius: 10px;
+            text-align: center;
+            line-height: 35px;
+            color: var(--game-text-light);
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: width 0.5s ease-in-out;
+        }
+        .share-count-text {
+            margin-top: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--game-primary);
+        }
+        .reward-note {
+            font-size: 0.95em;
+            color: #6c757d;
+            margin-top: 15px;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        /* Claim Reward Button (hidden initially) */
+        .claim-reward-button-container {
+            margin-top: 40px;
+            margin-bottom: 30px;
+            display: none; /* Hidden by default */
+        }
+        .claim-reward-button {
+            background-color: var(--game-primary);
+            color: var(--game-text-light);
+            padding: 20px 40px;
+            font-size: 1.8em;
+            font-weight: 700;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 10px 20px rgba(255, 87, 51, 0.4);
+            text-decoration: none; /* For the link-like button */
+            display: inline-block;
+        }
+        .claim-reward-button:hover {
+            background-color: #e64a2a;
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(255, 87, 51, 0.6);
+        }
+
+        /* Ad Wrapper Styling */
+        .ad-wrapper {
+            margin: 30px auto; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 20px var(--box-shadow); 
+            overflow: hidden; 
+            max-width: 100%; 
+            background-color: var(--game-text-light); 
+            border: 1px solid var(--border-light); 
+            min-height: 70px; 
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            padding: 10px; 
+            box-sizing: border-box;
+            z-index: 1; /* Below game container but above other content */
+        }
+        .ad-wrapper.banner-728x90 { min-height: 100px; }
+        .ad-wrapper.banner-320x50 { min-height: 70px; }
+        .ad-wrapper.native-ad-placeholder { min-height: 250px; }
+
+        .ad-wrapper iframe, .ad-wrapper div {
+            width: 100% !important;
+            height: auto !important; 
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+        }
+
+        /* Hidden Disclaimer */
+        .disclaimer {
+            position: absolute;
+            bottom: 5px; /* Very close to the bottom */
+            right: 5px;
+            font-size: 0.6em; /* Very small font size */
+            color: var(--disclaimer-initial-color); /* Very faint initially */
+            text-align: right;
+            width: 98%;
+            pointer-events: none; /* Make it unclickable */
+            user-select: none; /* Make text unselectable */
+            z-index: 0; /* Ensures it's behind content */
+            transition: color 0.5s ease-in-out; /* Smooth transition for color change */
+        }
+        .disclaimer.revealed {
+            color: var(--disclaimer-revealed-color); /* Slightly more visible */
+        }
+        .disclaimer a {
+            color: inherit; /* Inherit the very light color */
+            text-decoration: none;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 30px 20px;
+            }
+            .game-header {
+                margin: -30px -20px 30px -20px;
+                padding: 25px 15px;
+            }
+            .game-header h1 {
+                font-size: 2.8em;
+            }
+            .game-header p {
+                font-size: 1.2em;
+            }
+            h2 {
+                font-size: 2em;
+                margin-top: 25px;
+            }
+            .gift-box {
+                width: 150px;
+                height: 150px;
+            }
+            .gift-box .icon {
+                font-size: 4em;
+            }
+            .gift-box p {
+                font-size: 1.2em;
+            }
+            .modal-content {
+                padding: 30px;
+                width: 95%;
+            }
+            .modal-content h3 {
+                font-size: 2.5em;
+            }
+            .modal-content p {
+                font-size: 1.2em;
+            }
+            .modal-content .prize-won {
+                font-size: 1.8em;
+                padding: 12px 20px;
+            }
+            .modal-share-buttons button {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+            .ad-wrapper {
+                margin: 20px auto;
+            }
+            .progress-bar {
+                height: 30px;
+                line-height: 30px;
+                font-size: 1em;
+            }
+            .share-progress-container {
+                width: 95%;
+            }
+            .claim-reward-button {
+                padding: 18px 30px;
+                font-size: 1.5em;
+            }
+        }
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .game-container {
+                padding: 20px 15px;
+            }
+            .game-header {
+                margin: -20px -15px 25px -15px;
+                padding: 20px 10px;
+            }
+            .game-header h1 {
+                font-size: 2.2em;
+            }
+            .game-header p {
+                font-size: 1em;
+            }
+            h2 {
+                font-size: 1.8em;
+                margin-top: 20px;
+            }
+            .gift-boxes {
+                gap: 15px;
+            }
+            .gift-box {
+                width: 120px;
+                height: 120px;
+            }
+            .gift-box .icon {
+                font-size: 3em;
+            }
+            .gift-box p {
+                font-size: 1em;
+            }
+            .modal-content {
+                padding: 25px;
+            }
+            .modal-content h3 {
+                font-size: 2em;
+            }
+            .modal-content p {
+                font-size: 1em;
+            }
+            .modal-content .prize-won {
+                font-size: 1.5em;
+                padding: 10px 15px;
+            }
+            .modal-share-buttons {
+                flex-direction: column;
+            }
+            .modal-share-buttons button {
+                width: 95%;
+            }
+            .ad-wrapper.banner-320x50 { min-height: 60px; }
+            .disclaimer {
+                font-size: 0.5em;
+                bottom: 2px;
+                right: 2px;
+            }
+            .progress-bar {
+                height: 25px;
+                line-height: 25px;
+                font-size: 0.9em;
+            }
+            .share-count-text {
+                font-size: 1em;
+            }
+            .reward-note {
+                font-size: 0.8em;
+            }
+            .claim-reward-button {
+                padding: 15px 25px;
+                font-size: 1.2em;
+            }
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script>(function(d,z,s){s.src='https://'+d+'/401/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('gizokraijaw.net',9524613,document.createElement('script'))</script> 
+    
+    <script src="https://couphaithuph.net/act/files/tag.min.js?z=9521224" data-cfasync="false" async></script> 
+
+    <script type='text/javascript' src='//pl26835180.profitableratecpm.com/51/87/c3/5187c39d0d72d45de29e9c62b51aaba2.js'></script>
+    
+    <script type='text/javascript' src='//pl26835142.profitableratecpm.com/db/27/6d/db276d3b5f1289379bbe5d365485ac52.js'></script>
+
+</head>
+<body>
+
+    <div class="ad-wrapper banner-728x90" style="margin-bottom: 20px;">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : '230a1038596637e7a531e0f0322c347f', /* Replace with your Adsterra 728x90 unit key */
+                'format' : 'iframe',
+                'height' : 90,
+                'width' : 728,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/230a1038596637e7a531e0f0322c347f/invoke.js"></script>
+    </div>
+    <div class="game-container">
+        <div class="game-header">
+            <h1>🏆 DailyHub Lucky Gift Box! 🎁</h1>
+            <p>Click a box to reveal your hidden prize!</p>
+        </div>
+
+        <h2>Tap a Gift Box to Play!</h2>
+        <p id="instructionText">You have <span id="attemptsLeft">3</span> attempts left to win!</p>
+
+        <div class="gift-boxes" id="giftBoxesContainer">
+            </div>
+
+        <div class="ad-wrapper native-ad-placeholder">
+            <script async="async" data-cfasync="false" src="//pl26835150.profitableratecpm.com/39628927897b21d6c45567203000ccc6/invoke.js"></script> <div id="container-39628927897b21d6c45567203000ccc6"></div>
+        </div>
+        <div class="ad-wrapper native-ad-placeholder">
+            </div>
+        <script>(function(d,z,s){s.src='https://'+d+'/401/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('groleegni.net',9524604,document.createElement('script'))</script> 
+        </div> <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModalBtn">&times;</span>
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <p class="prize-won" id="prizeWon"></p>
+            <p class="share-prompt">Share with <strong>7 friends</strong> to claim your reward & support DailyHub!</p>
+            
+            <div class="share-progress-container">
+                <div class="progress-bar" id="progressBar">0/7</div>
+            </div>
+            <p class="share-count-text" id="shareCountText">Shared: 0/7</p>
+            <p class="reward-note">Your reward will be delivered only after verifying 7 real shares of this link.</p>
+
+            <div class="modal-share-buttons">
+                <button class="whatsapp-btn" id="modalWhatsappShareBtn">
+                    <i class="fab fa-whatsapp"></i> Share on WhatsApp
+                </button>
+                <button class="other-btn" id="modalOtherShareBtn">
+                    <i class="fas fa-share-alt"></i> Share to Others
+                </button>
+            </div>
+
+            <div class="claim-reward-button-container" id="claimRewardBtnContainer">
+                <a href="#" class="claim-reward-button" id="claimRewardBtn">
+                    Claim Your Prize!
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="ad-wrapper banner-320x50" style="margin-top: 20px;">
+        <script type="text/javascript">
+            atOptions = {
+                'key' : 'f4fd46187fcf3a252df23d7277e02fd7', /* Replace with your Adsterra 320x50 unit key */
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+            };
+        </script>
+        <script type="text/javascript" src="//www.highperformanceformat.com/f4fd46187fcf3a252df23d7277e02fd7/invoke.js"></script>
+    </div>
+    <div style="height: 1500px; background-color: transparent;"></div>
+    <div class="disclaimer" id="disclaimerElement">
+        <p>Disclaimer: This game is for entertainment purposes only. Prizes are illustrative and subject to DailyHub's terms and conditions. Actual payouts (if any) may vary and are at the sole discretion of DailyHub. Sharing does not guarantee a real-world monetary prize. For full details, please contact us.</p>
+        <p><a href="/disclaimer-policy/">Read Full Disclaimer</a></p>
+    </div>
+
+    <script>
+        const giftBoxesContainer = document.getElementById('giftBoxesContainer');
+        const instructionText = document.getElementById('instructionText');
+        const attemptsLeftElem = document.getElementById('attemptsLeft');
+        const resultModal = document.getElementById('resultModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const prizeWonElem = document.getElementById('prizeWon');
+        const modalWhatsappShareBtn = document.getElementById('modalWhatsappShareBtn');
+        const modalOtherShareBtn = document.getElementById('modalOtherShareBtn');
+        const progressBar = document.getElementById('progressBar');
+        const shareCountText = document.getElementById('shareCountText');
+        const claimRewardBtnContainer = document.getElementById('claimRewardBtnContainer');
+        const claimRewardBtn = document.getElementById('claimRewardBtn');
+        const disclaimerElement = document.getElementById('disclaimerElement');
+
+        let attempts = 0;
+        const maxAttempts = 3; // Max clicks to win a prize
+        const numGiftBoxes = 6; 
+        
+        let sharesCompleted = 0; // Tracks shares for the progress bar
+        const requiredShares = 7; // Number of shares needed to unlock the button
+
+        const emptyMessages = [
+            "Oops! Try another one!",
+            "Almost! Keep going!",
+            "Not this time. Pick again!",
+            "Empty. Your luck is just warming up!"
+        ];
+        const prizeOptions = [
+            "🎉 DailyHub Exclusive Access! (Unlock Premium Content)",
+            "💰 ₹10,000 Cash Prize! (Virtual)",
+            "💸 $1,000 Bonus! (Virtual)",
+            "🎁 A Special Surprise Gift! (Digital Content)",
+            "🌟 DailyHub VIP Pass! (Future Perks)",
+            "🚀 Ad-Free Browse for 1 Month! (On DailyHub)"
+        ];
+        
+        // IMPORTANT: Updated for apknixy.github.io/reward
+        const monetagDirectLink = "https://otieu.com/4/9524664"; 
+        const pageToShare = "https://apknixy.github.io/reward/"; // IMPORTANT: Updated for GitHub Pages
+
+        const shareText = "I just played the DailyHub Lucky Gift Box game and won something amazing! You should try your luck too! Click here: ";
+
+        function initializeGame() {
+            giftBoxesContainer.innerHTML = ''; // Clear existing boxes
+            attempts = 0;
+            attemptsLeftElem.textContent = maxAttempts - attempts;
+            instructionText.textContent = `You have ${maxAttempts - attempts} attempts left to win!`;
+
+            for (let i = 0; i < numGiftBoxes; i++) {
+                const giftBox = document.createElement('div');
+                giftBox.className = 'gift-box';
+                giftBox.setAttribute('data-box-id', i);
+                giftBox.innerHTML = `
+                    <i class="fas fa-gift icon"></i>
+                    <p>Gift #${i + 1}</p>
+                `;
+                giftBox.addEventListener('click', handleBoxClick);
+                giftBoxesContainer.appendChild(giftBox);
+            }
+            enableAllBoxes();
+            updateShareProgressBar(); // Initialize progress bar
+            claimRewardBtnContainer.style.display = 'none'; // Hide claim button initially
+        }
+
+        function handleBoxClick(event) {
+            const clickedBox = event.currentTarget;
+            if (clickedBox.classList.contains('opened') || clickedBox.classList.contains('disabled')) {
+                return; // Do nothing if already opened or disabled
+            }
+
+            attempts++;
+            attemptsLeftElem.textContent = maxAttempts - attempts;
+            
+            clickedBox.classList.add('opened'); // Mark as opened
+            // Change icon to reflect opened state
+            clickedBox.querySelector('.icon').className = 'fas fa-box-open icon'; 
+
+            if (attempts < maxAttempts) {
+                // Not the winning click yet
+                const emptyMessage = emptyMessages[Math.floor(Math.random() * emptyMessages.length)];
+                modalTitle.textContent = "Oops!";
+                modalMessage.textContent = emptyMessage;
+                prizeWonElem.style.display = 'none'; // Hide prize
+                modalWhatsappShareBtn.style.display = 'none'; // Hide share buttons temporarily
+                modalOtherShareBtn.style.display = 'none'; // Hide share buttons temporarily
+                claimRewardBtnContainer.style.display = 'none'; // Ensure claim button is hidden
+                resultModal.style.display = 'flex';
+            } else {
+                // This is the winning click!
+                const prize = prizeOptions[Math.floor(Math.random() * prizeOptions.length)];
+                modalTitle.textContent = "Congratulations!";
+                modalMessage.textContent = "You've won a special prize!";
+                prizeWonElem.textContent = prize;
+                prizeWonElem.style.display = 'inline-block'; // Show prize
+                modalWhatsappShareBtn.style.display = 'flex'; // Show share buttons
+                modalOtherShareBtn.style.display = 'flex'; // Show share buttons
+                
+                // Check if shares are already complete to show claim button immediately
+                if (sharesCompleted >= requiredShares) {
+                    claimRewardBtnContainer.style.display = 'block';
+                }
+                
+                resultModal.style.display = 'flex';
+                disableAllBoxes(); // Disable all boxes after winning
+                instructionText.textContent = "Congratulations! Share to claim your reward!";
+            }
+        }
+
+        function disableAllBoxes() {
+            document.querySelectorAll('.gift-box').forEach(box => {
+                box.classList.add('disabled');
+            });
+        }
+        function enableAllBoxes() {
+            document.querySelectorAll('.gift-box').forEach(box => {
+                box.classList.remove('disabled');
+                box.classList.remove('opened');
+                box.querySelector('.icon').className = 'fas fa-gift icon'; // Reset icon
+            });
+        }
+
+        closeModalBtn.addEventListener('click', () => {
+            resultModal.style.display = 'none';
+            if (attempts < maxAttempts) {
+                // If they haven't won yet, re-enable boxes they didn't click
+                 document.querySelectorAll('.gift-box:not(.opened)').forEach(box => {
+                    box.classList.remove('disabled');
+                });
+            }
+            // If they won, the game state remains won, and boxes remain disabled.
+            // Share buttons and claim button state managed by sharesCompleted
+        });
+
+        // Close modal if clicked outside content
+        window.addEventListener('click', (event) => {
+            if (event.target == resultModal) {
+                resultModal.style.display = 'none';
+                if (attempts < maxAttempts) {
+                    document.querySelectorAll('.gift-box:not(.opened)').forEach(box => {
+                        box.classList.remove('disabled');
+                    });
+                }
+            }
+        });
+
+        function updateShareProgressBar() {
+            const percentage = (sharesCompleted / requiredShares) * 100;
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = `${Math.min(sharesCompleted, requiredShares)}/${requiredShares}`; // Cap at 7/7 display
+            shareCountText.textContent = `Shared: ${Math.min(sharesCompleted, requiredShares)}/${requiredShares}`; // Cap at 7/7 display
+
+            if (sharesCompleted >= 5) { // Disclaimer appears at 5/7 shares
+                disclaimerElement.classList.add('revealed');
+            } else {
+                disclaimerElement.classList.remove('revealed');
+            }
+
+            if (sharesCompleted >= requiredShares && attempts >= maxAttempts) { // Both conditions met
+                claimRewardBtnContainer.style.display = 'block'; // Show the claim button
+            } else {
+                claimRewardBtnContainer.style.display = 'none'; // Keep hidden
+            }
+        }
+
+        // Share button logic within modal
+        modalWhatsappShareBtn.addEventListener('click', () => {
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + pageToShare)}`;
+            window.open(whatsappUrl, '_blank');
+            
+            // Simulate share increment immediately
+            sharesCompleted++;
+            updateShareProgressBar();
+            // Open Montag Direct Link
+            window.open(monetagDirectLink, '_blank'); 
+        });
+
+        modalOtherShareBtn.addEventListener('click', () => {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'DailyHub Lucky Gift Box!',
+                    text: shareText,
+                    url: pageToShare,
+                }).then(() => {
+                    console.log('Thanks for sharing!');
+                    sharesCompleted++;
+                    updateShareProgressBar();
+                    // Open Montag Direct Link
+                    window.open(monetagDirectLink, '_blank'); 
+                })
+                .catch(console.error);
+            } else {
+                alert("Please manually share this link: " + pageToShare + " with your friends!");
+                // Simulate share increment even if manual share
+                sharesCompleted++;
+                updateShareProgressBar();
+                // Open Montag Direct Link even if manual share
+                window.open(monetagDirectLink, '_blank'); 
+            }
+        });
+
+        claimRewardBtn.addEventListener('click', (event) => {
+            event.preventDefault(); // Prevent default link behavior
+            // Since the button is only shown after shares and win, just open the direct link
+            window.open(monetagDirectLink, '_blank'); 
+            alert("Your reward has been claimed! Thank you for sharing with DailyHub!"); // Optional feedback
+            // You might want to reset the game or redirect here if they "claim"
+            // For now, it just opens the direct link and stays on the page.
+            // If you want a redirect: window.location.href = "https://apknixy.github.io/thank-you-page-or-real-reward/"; // Example for GitHub Pages
+        });
+
+
+        // Initialize the game when the page loads
+        initializeGame();
+    </script>
+
+    <script>(s=>{s.dataset.zone='9521216',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script> 
+
+</body>
+</html>
